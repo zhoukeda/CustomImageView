@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     >
-<com.example.administrator.imagetest.MyImageView
+<Button
+    android:id="@+id/btn1"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scaleType="matrix"
-    android:src="@mipmap/ic_launcher"/>
+    android:layout_height="wrap_content"
+    android:text="ImageView拖拉拽放大缩小"/>
+    <Button
+        android:id="@+id/btn2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="圆形ImageView"/>
+    <Button
+        android:id="@+id/btn3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="圆角矩形ImageView"/>
 
-
-</RelativeLayout>
+</LinearLayout>

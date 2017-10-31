@@ -289,7 +289,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public void onShowPress(MotionEvent e) {
 
     }
-
     //用户（轻触触摸屏后）松开，由一个1个MotionEvent ACTION_UP触发
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
@@ -301,7 +300,10 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         //判断宽度或者高度有一个大于控件宽高的
         if (((getMatrixRectF().right - getMatrixRectF().left) > getWidth() || (getMatrixRectF().bottom - getMatrixRectF().top) > getHeight())) {
+//            getParent().requestDisallowInterceptTouchEvent(true);//可以滑动,拦截Viewpager事件
             matrix.postTranslate(amendment(-distanceX, -distanceY)[0], amendment(-distanceX, -distanceY)[1]);
+        }else{
+//            getParent().requestDisallowInterceptTouchEvent(false);//不能滑动，viewpager处理事件
         }
 
         setImageMatrix(matrix);

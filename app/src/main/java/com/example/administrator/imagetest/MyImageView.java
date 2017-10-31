@@ -260,12 +260,18 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         getMatrixRectF();
     }
 
+    /**
+     * view加載狀態監聽
+     */
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
+    /**
+     * 關閉view加載狀態監聽
+     */
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();

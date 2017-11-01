@@ -39,5 +39,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this,OneActivity.class));
             }
         });
+        findViewById(R.id.btn5).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageType.type = "4";
+                startActivity(new Intent(MainActivity.this,OneActivity.class));
+            }
+        });
     }
 }

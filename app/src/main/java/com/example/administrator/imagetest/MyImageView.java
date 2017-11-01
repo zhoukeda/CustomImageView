@@ -28,22 +28,20 @@ import android.widget.ImageView;
 
 @SuppressLint("AppCompatCustomView")
 public class MyImageView extends ImageView implements ScaleGestureDetector.OnScaleGestureListener
-        , ViewTreeObserver.OnGlobalLayoutListener, GestureDetector.OnGestureListener {
-    private int mode;//判断当前手触摸屏幕的歌数
-
+        , ViewTreeObserver.OnGlobalLayoutListener, GestureDetector.OnGestureListener,RotateGestureDetector.OnRotateListener {
     private Matrix matrix;
     private String TAG = "MyImageView";
-    private GestureDetector gestureDetector;
-    private ScaleGestureDetector scaleGestureDetector;
+    private GestureDetector gestureDetector;//手势识别接口
+    private ScaleGestureDetector scaleGestureDetector;//缩放接口
+    private RotateGestureDetector rotateGestureDetector;
     private boolean once = true;
     private int MAX_SCALE = 4, MIN_SCALE = 4;//最大放大倍数，最小放大倍数
     private RectF rect;//当前图片的矩形 ps:rect与rectf的差别在于精度，牵着是int型，后者是float型
     private float firstScale = 0;//原图与第一次适配屏幕的倍率
     private Bitmap outBitmap;//因为资源文件的bitmap不能直接操作，所以要重新创建一个可输出的bitmap
     private Paint paint;//画笔
-    private boolean isCircle, isBounds, isScale;//是否圆形，是否圆角矩形，是否可放大缩小，拖拉拽,三个状态只能有一个生效
+    private boolean isCircle = false, isBounds = false, isScale = false, isRoate = false;//是否圆形，是否圆角矩形，是否可放大缩小,是否可旋转
     private Context context;
-    private int radius;//圆角角度
     private int startWidth, startHeight;//图片初始化高度
     /**
      * 处理矩阵的9个值
@@ -55,14 +53,18 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         this.context = context;
         matrix = new Matrix();
         rect = new RectF();
-
+        gestureDetector = new GestureDetector(this);
+        scaleGestureDetector = new ScaleGestureDetector(context, this);
+        rotateGestureDetector = new RotateGestureDetector(this);
+        doubleClick();
     }
 
     public void setCircle(boolean isCircle) {
         this.isCircle = isCircle;
         if (isCircle) {
             isBounds = false;
-            isScale = false;
+//            isScale = false;
+//            isRoate = false;
             Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
             paint = new Paint();
             outBitmap = getCircleBitmap(bitmap);
@@ -74,7 +76,9 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         this.isBounds = isBounds;
         if (isBounds) {
             isCircle = false;
-            isScale = false;
+//            isCircle = false;
+//            isScale = false;
+//            isRoate = false;
             Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
             paint = new Paint();
             outBitmap = getBoundsBitmap(bitmap, radius);
@@ -85,11 +89,19 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public void setScale(boolean isScale) {
         this.isScale = isScale;
         if (isScale) {
-            isBounds = false;
-            isCircle = false;
-            gestureDetector = new GestureDetector(this);
-            scaleGestureDetector = new ScaleGestureDetector(context, this);
-            doubleClick();
+//            isBounds = false;
+//            isRoate = false;
+//            isCircle = false;
+
+        }
+    }
+
+    public void setRoate(boolean isRoate) {
+        this.isRoate = isRoate;
+        if (isRoate) {
+//            isBounds = false;
+//            isRoate = false;
+//            isCircle = false;
         }
     }
 
@@ -98,6 +110,10 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         this.context = context;
         matrix = new Matrix();
         rect = new RectF();
+        gestureDetector = new GestureDetector(this);
+        scaleGestureDetector = new ScaleGestureDetector(context, this);
+        rotateGestureDetector = new RotateGestureDetector(this);
+        doubleClick();
     }
 
     /**
@@ -130,12 +146,12 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         final float scale = getScale() / firstScale;
         //想要放大缩小的中心是在屏幕的中心，那么图片的中心也要在屏幕中心，这是就得通过计算偏移量，把图片先移动到屏幕中心来
         if (scale >= 1 && scale <= 2) {
-            matrix.postTranslate(getWidth()/2-getMatrixRectF().centerX(),getHeight()/2-getMatrixRectF().centerY());
+            matrix.postTranslate(getWidth() / 2 - getMatrixRectF().centerX(), getHeight() / 2 - getMatrixRectF().centerY());
             matrix.postScale(MAX_SCALE / scale, MAX_SCALE / scale, getWidth() / 2, getHeight() / 2);
             setImageMatrix(matrix);
             getMatrixRectF();
         } else {
-            matrix.postTranslate(getWidth()/2-getMatrixRectF().centerX(),getHeight()/2-getMatrixRectF().centerY());
+            matrix.postTranslate(getWidth() / 2 - getMatrixRectF().centerX(), getHeight() / 2 - getMatrixRectF().centerY());
             matrix.postScale(1 / scale, 1 / scale, getWidth() / 2, getHeight() / 2);
             //将图片移动至屏幕中心
             setImageMatrix(matrix);
@@ -206,9 +222,11 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public boolean onTouchEvent(MotionEvent event) {
         if (isScale) {
             return gestureDetector.onTouchEvent(event) || scaleGestureDetector.onTouchEvent(event);
-        } else {
-            return super.onTouchEvent(event);
         }
+        if (isRoate){
+            return rotateGestureDetector.onTouchEvent(event);
+        }
+            return super.onTouchEvent(event);
     }
 
     @Override
@@ -266,7 +284,9 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        getViewTreeObserver().addOnGlobalLayoutListener(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }
     }
 
     /**
@@ -295,6 +315,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public void onShowPress(MotionEvent e) {
 
     }
+
     //用户（轻触触摸屏后）松开，由一个1个MotionEvent ACTION_UP触发
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
@@ -308,7 +329,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         if (((getMatrixRectF().right - getMatrixRectF().left) > getWidth() || (getMatrixRectF().bottom - getMatrixRectF().top) > getHeight())) {
 //            getParent().requestDisallowInterceptTouchEvent(true);//可以滑动,拦截Viewpager事件
             matrix.postTranslate(amendment(-distanceX, -distanceY)[0], amendment(-distanceX, -distanceY)[1]);
-        }else{
+        } else {
 //            getParent().requestDisallowInterceptTouchEvent(false);//不能滑动，viewpager处理事件
         }
 
@@ -372,7 +393,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         } else {
             dis[0] = 0;
         }
-
         return dis;
     }
 
@@ -424,5 +444,25 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, matrix, paint);
         return output;
+    }
+
+    /**
+     * 设置图片旋转
+     * @param degrees
+     * @param focusX
+     * @param focusY
+     */
+    @Override
+    public void onRotate(float degrees, float focusX, float focusY) {
+        matrix.postRotate(degrees,focusX,focusY);
+        setImageMatrix(matrix);
+    }
+    public void returnFirst(){
+        matrix.reset();
+        once = true;
+        startWidth = 0;
+        firstScale = 0;
+        startHeight = 0;
+        onGlobalLayout();
     }
 }

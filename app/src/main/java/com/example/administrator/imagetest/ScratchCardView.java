@@ -40,13 +40,13 @@ public class ScratchCardView extends View {
         outBitmap = Bitmap.createBitmap(inBitmap.getWidth(),
                 inBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(outBitmap);
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint = new Paint();
         paint.setColor(0xffc0c0c0);
         mCanvas.drawRect(0, 0, inBitmap.getWidth(), inBitmap.getHeight(), paint);
 
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(60);//设置画笔宽度
-
+        paint.setAntiAlias(true);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
     }
 
@@ -54,7 +54,6 @@ public class ScratchCardView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawBitmap(inBitmap, 0, 0, null);
         canvas.drawBitmap(outBitmap, 0, 0, null);
-//        mCanvas.drawPath(path, paint);
     }
 
     @Override
@@ -74,5 +73,18 @@ public class ScratchCardView extends View {
         postInvalidate();//刷新UI
 
         return true;
+    }
+
+    /**
+     * 相当于用遮罩的颜色重新绘制一遍路径
+     */
+    public void returnFirst() {
+        paint.setXfermode(null);
+        paint.setStrokeWidth(paint.getStrokeWidth()+5);
+        mCanvas.drawPath(path, paint);
+        postInvalidate();//刷新UI
+        path.reset();
+        paint.setStrokeWidth(paint.getStrokeWidth()-5);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
     }
 }

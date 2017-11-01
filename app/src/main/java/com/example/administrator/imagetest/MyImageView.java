@@ -62,7 +62,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     }
 
     /**
-     *初始化参数
+     * 初始化参数
      */
     private void initData() {
         matrix = new Matrix();
@@ -116,6 +116,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         }
         Log.d(TAG, "onScale: " + "center" + getMatrixRectF().centerX() + "      " + getMatrixRectF().centerY());
     }
+
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         //这个放大缩小是每次进行细微的变化，通过频繁变化，来改变图片大小
@@ -161,17 +162,24 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
 
     /**
      * gestureDetector,scaleGestureDetector这些都是根据MotionEvent来进行判断的，要调用传入event事件才会生效
+     *
      * @param event
      * @return
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isRoate && isScale) {
+            rotateGestureDetector.onTouchEvent(event);
+            return gestureDetector.onTouchEvent(event) || scaleGestureDetector.onTouchEvent(event);
+        }
         if (isScale) {
             return gestureDetector.onTouchEvent(event) || scaleGestureDetector.onTouchEvent(event);
         }
         if (isRoate) {
-            return rotateGestureDetector.onTouchEvent(event);
+            rotateGestureDetector.onTouchEvent(event);
+            return true;
         }
+
         return super.onTouchEvent(event);
     }
 
@@ -275,10 +283,15 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         //判断宽度或者高度有一个大于控件宽高的
         if (((getMatrixRectF().right - getMatrixRectF().left) > getWidth() || (getMatrixRectF().bottom - getMatrixRectF().top) > getHeight())) {
-//            getParent().requestDisallowInterceptTouchEvent(true);//可以滑动,拦截Viewpager事件
+            //滑动到横坐标边界，将事件交给viewpager处理
+            if(amendment(-distanceX, -distanceY)[0]==0){
+                getParent().requestDisallowInterceptTouchEvent(false);//可以滑动,拦截Viewpager事件
+            }else{
+                getParent().requestDisallowInterceptTouchEvent(true);//可以滑动,拦截Viewpager事件
+            }
             matrix.postTranslate(amendment(-distanceX, -distanceY)[0], amendment(-distanceX, -distanceY)[1]);
         } else {
-//            getParent().requestDisallowInterceptTouchEvent(false);//不能滑动，viewpager处理事件
+            getParent().requestDisallowInterceptTouchEvent(false);//不能滑动，viewpager处理事件
         }
 
         setImageMatrix(matrix);
@@ -403,6 +416,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
      */
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
+        //focusX,focusY为两根手指的中心点坐标，第三根手指不起作用
         matrix.postRotate(degrees, focusX, focusY);
         setImageMatrix(matrix);
     }

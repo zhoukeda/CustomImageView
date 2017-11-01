@@ -28,10 +28,8 @@ public class RotateGestureDetector {
         mListener = l;
     }
 
-    public boolean onTouchEvent(MotionEvent event) {
-
+    public void onTouchEvent(MotionEvent event) {
         final int Action = event.getActionMasked();
-
         switch (Action) {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP:
@@ -55,7 +53,6 @@ public class RotateGestureDetector {
             default:
                 break;
         }
-        return true;
     }
 
     private float caculateSlope(MotionEvent event) {

@@ -26,6 +26,8 @@ public class OneActivity extends AppCompatActivity{
         switch (ImageType.type){
             case "0":
                 myImageView.setScale(true);
+//                myImageView.setBounds(true,80);
+//                myImageView.setRoate(true);
                 break;
             case "1":
                 myImageView.setCircle(true);

@@ -26,21 +26,26 @@ public class OneActivity extends AppCompatActivity{
         switch (ImageType.type){
             case "0":
                 myImageView.setScale(true);
+//                myImageView.setImageDrawable(getDrawable(R.mipmap.test));
 //                myImageView.setBounds(true,80);
 //                myImageView.setRoate(true);
                 break;
             case "1":
                 myImageView.setCircle(true);
+//                myImageView.setImageDrawable(getDrawable(R.mipmap.test));
                 break;
             case "2":
                 myImageView.setBounds(true,80);
+//                myImageView.setImageDrawable(getDrawable(R.mipmap.test));
                 break;
             case "3":
                 myImageView.setVisibility(View.GONE);
                 cardView.setVisibility(View.VISIBLE);
+//                myImageView.setImageDrawable(getDrawable(R.mipmap.test));
                 break;
             case "4":
                 myImageView.setRoate(true);
+//                myImageView.setImageDrawable(getDrawable(R.mipmap.test));
                 break;
         }
 

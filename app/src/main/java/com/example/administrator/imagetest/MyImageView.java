@@ -43,6 +43,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     private boolean isCircle = false, isBounds = false, isScale = false, isRoate = false;//是否圆形，是否圆角矩形，是否可放大缩小,是否可旋转
     private Context context;
     private int startWidth, startHeight;//图片初始化高度
+    private int radius;
     /**
      * 处理矩阵的9个值
      */
@@ -222,6 +223,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         if (startWidth > width && startHeight > height) {
             scale = Math.min((float) startWidth / width, (float) startHeight / height);
         }
+        //如果图片宽高都小于屏幕，选取差比较小的那个比例，放大
         if (startWidth < width && startHeight < height) {
             scale = Math.min((float) width / startWidth, (float) height / startHeight);
         }
@@ -235,7 +237,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     }
 
     /**
-     * view加載狀態監聽
+     * 控件被加载到窗口时，view加載狀態監聽
      */
     @Override
     protected void onAttachedToWindow() {
@@ -246,7 +248,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     }
 
     /**
-     * 關閉view加載狀態監聽
+     * 控件被销毁时，關閉view加載狀態監聽
      */
     @Override
     protected void onDetachedFromWindow() {
@@ -366,7 +368,7 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (isCircle || isBounds) {
+        if ((isCircle || isBounds)&&paint!=null) {
             setScaleType(ScaleType.CENTER);
             paint.reset();
             canvas.drawBitmap(outBitmap, matrix, paint);
@@ -429,9 +431,13 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         onGlobalLayout();
     }
 
-    //是否开启圆形
-    public void setCircle(boolean isCircle) {
-        this.isCircle = isCircle;
+    /**
+     * 在代码中设置图片调用这个，在xml设置图片不调用这个方法
+     * @param drawable
+     */
+    @Override
+    public void setImageDrawable(@Nullable Drawable drawable) {
+        super.setImageDrawable(drawable);
         if (isCircle) {
             isBounds = false;
             Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
@@ -439,12 +445,37 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
             outBitmap = getCircleBitmap(bitmap);
             postInvalidate();
         }
+        if (isBounds) {
+            isCircle = false;
+            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
+            paint = new Paint();
+            outBitmap = getBoundsBitmap(bitmap, radius);
+            postInvalidate();
+        }
+    }
+
+    /**
+     * 是否开启圆形
+     * xml设置的图片属性会先于setImageDrawable方法运行
+     */
+    public void setCircle(boolean isCircle) {
+        this.isCircle = isCircle;
+        //判断是否已经在xml中设置图片，否则会报错
+        if (isCircle&&paint==null&&getDrawable()!=null) {
+            isBounds = false;
+            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
+            paint = new Paint();
+            outBitmap = getCircleBitmap(bitmap);
+            postInvalidate();
+        }
+
     }
 
     //是否开启圆角矩形
     public void setBounds(boolean isBounds, int radius) {
         this.isBounds = isBounds;
-        if (isBounds) {
+       this.radius =radius;
+        if (isBounds&&paint==null&&getDrawable()!=null) {
             isCircle = false;
             Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
             paint = new Paint();

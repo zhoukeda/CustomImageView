@@ -124,15 +124,19 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         //通过与imageView本身的宽高进行限制，最大不过4倍，最小不过四分之一
         //放大
         if (detector.getScaleFactor() >= 1) {
-            if (Math.min(getMatrixRectF().bottom - getMatrixRectF().top, getMatrixRectF().right - getMatrixRectF().left) / getWidth() <= MAX_SCALE) {
-                matrix.postScale(detector.getScaleFactor(), detector.getScaleFactor(), getWidth() / 2, getHeight() / 2);
+            if (Math.min(getMatrixRectF().bottom - getMatrixRectF().top,
+                    getMatrixRectF().right - getMatrixRectF().left) / getWidth() <= MAX_SCALE) {
+                matrix.postScale(detector.getScaleFactor(),
+                        detector.getScaleFactor(), getWidth() / 2, getHeight() / 2);
                 setImageMatrix(matrix);
                 getMatrixRectF();
             }
         } else {
             //缩小
-            if (getWidth() / Math.min(getMatrixRectF().bottom - getMatrixRectF().top, getMatrixRectF().right - getMatrixRectF().left) <= MIN_SCALE) {
-                matrix.postScale(detector.getScaleFactor(), detector.getScaleFactor(), getWidth() / 2, getHeight() / 2);
+            if (getWidth() / Math.min(getMatrixRectF().bottom - getMatrixRectF().top,
+                    getMatrixRectF().right - getMatrixRectF().left) <= MIN_SCALE) {
+                matrix.postScale(detector.getScaleFactor(), detector.getScaleFactor(),
+                        getWidth() / 2, getHeight() / 2);
                 setImageMatrix(matrix);
                 getMatrixRectF();
             }

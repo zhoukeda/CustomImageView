@@ -28,7 +28,7 @@ import android.widget.ImageView;
 
 @SuppressLint("AppCompatCustomView")
 public class MyImageView extends ImageView implements ScaleGestureDetector.OnScaleGestureListener
-        , ViewTreeObserver.OnGlobalLayoutListener, GestureDetector.OnGestureListener,RotateGestureDetector.OnRotateListener {
+        , ViewTreeObserver.OnGlobalLayoutListener, GestureDetector.OnGestureListener, RotateGestureDetector.OnRotateListener {
     private Matrix matrix;
     private String TAG = "MyImageView";
     private GestureDetector gestureDetector;//手势识别接口
@@ -51,63 +51,20 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
     public MyImageView(Context context) {
         super(context);
         this.context = context;
-        matrix = new Matrix();
-        rect = new RectF();
-        gestureDetector = new GestureDetector(this);
-        scaleGestureDetector = new ScaleGestureDetector(context, this);
-        rotateGestureDetector = new RotateGestureDetector(this);
-        doubleClick();
+        initData();
     }
 
-    public void setCircle(boolean isCircle) {
-        this.isCircle = isCircle;
-        if (isCircle) {
-            isBounds = false;
-//            isScale = false;
-//            isRoate = false;
-            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
-            paint = new Paint();
-            outBitmap = getCircleBitmap(bitmap);
-            postInvalidate();
-        }
-    }
-
-    public void setBounds(boolean isBounds, int radius) {
-        this.isBounds = isBounds;
-        if (isBounds) {
-            isCircle = false;
-//            isCircle = false;
-//            isScale = false;
-//            isRoate = false;
-            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
-            paint = new Paint();
-            outBitmap = getBoundsBitmap(bitmap, radius);
-            postInvalidate();
-        }
-    }
-
-    public void setScale(boolean isScale) {
-        this.isScale = isScale;
-        if (isScale) {
-//            isBounds = false;
-//            isRoate = false;
-//            isCircle = false;
-
-        }
-    }
-
-    public void setRoate(boolean isRoate) {
-        this.isRoate = isRoate;
-        if (isRoate) {
-//            isBounds = false;
-//            isRoate = false;
-//            isCircle = false;
-        }
-    }
 
     public MyImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+        initData();
+    }
+
+    /**
+     *初始化参数
+     */
+    private void initData() {
         matrix = new Matrix();
         rect = new RectF();
         gestureDetector = new GestureDetector(this);
@@ -159,20 +116,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         }
         Log.d(TAG, "onScale: " + "center" + getMatrixRectF().centerX() + "      " + getMatrixRectF().centerY());
     }
-
-    /**
-     * 获取两点之间的距离
-     *
-     * @param event
-     * @return
-     */
-    private double setArea(MotionEvent event) {
-        float dx = event.getX(0) - event.getX(1);
-        float dy = event.getY(0) - event.getY(1);
-        return Math.sqrt(Math.sqrt(dx * dx + dy * dy));
-    }
-
-
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         //这个放大缩小是每次进行细微的变化，通过频繁变化，来改变图片大小
@@ -183,7 +126,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
                 matrix.postScale(detector.getScaleFactor(), detector.getScaleFactor(), getWidth() / 2, getHeight() / 2);
                 setImageMatrix(matrix);
                 getMatrixRectF();
-
             }
         } else {
             //缩小
@@ -193,7 +135,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
                 getMatrixRectF();
             }
         }
-
         return true;
     }
 
@@ -218,24 +159,31 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
 
     }
 
+    /**
+     * gestureDetector,scaleGestureDetector这些都是根据MotionEvent来进行判断的，要调用传入event事件才会生效
+     * @param event
+     * @return
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (isScale) {
             return gestureDetector.onTouchEvent(event) || scaleGestureDetector.onTouchEvent(event);
         }
-        if (isRoate){
+        if (isRoate) {
             return rotateGestureDetector.onTouchEvent(event);
         }
-            return super.onTouchEvent(event);
+        return super.onTouchEvent(event);
     }
 
+    /**
+     * 当View发生改变的时候，会调用这个监听，可能多次调用，所以要加判断
+     */
     @Override
     public void onGlobalLayout() {
         if (once) {
             initView();
             once = false;
         }
-
     }
 
     /**
@@ -448,21 +396,57 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
 
     /**
      * 设置图片旋转
+     *
      * @param degrees
      * @param focusX
      * @param focusY
      */
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
-        matrix.postRotate(degrees,focusX,focusY);
+        matrix.postRotate(degrees, focusX, focusY);
         setImageMatrix(matrix);
     }
-    public void returnFirst(){
+
+    public void returnFirst() {
         matrix.reset();
         once = true;
         startWidth = 0;
         firstScale = 0;
         startHeight = 0;
         onGlobalLayout();
+    }
+
+    //是否开启圆形
+    public void setCircle(boolean isCircle) {
+        this.isCircle = isCircle;
+        if (isCircle) {
+            isBounds = false;
+            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
+            paint = new Paint();
+            outBitmap = getCircleBitmap(bitmap);
+            postInvalidate();
+        }
+    }
+
+    //是否开启圆角矩形
+    public void setBounds(boolean isBounds, int radius) {
+        this.isBounds = isBounds;
+        if (isBounds) {
+            isCircle = false;
+            Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
+            paint = new Paint();
+            outBitmap = getBoundsBitmap(bitmap, radius);
+            postInvalidate();
+        }
+    }
+
+    //是否开启缩放
+    public void setScale(boolean isScale) {
+        this.isScale = isScale;
+    }
+
+    //是否开启旋转
+    public void setRoate(boolean isRoate) {
+        this.isRoate = isRoate;
     }
 }

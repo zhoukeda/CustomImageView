@@ -293,7 +293,6 @@ public class MyImageView extends ImageView implements ScaleGestureDetector.OnSca
         } else {
             getParent().requestDisallowInterceptTouchEvent(false);//不能滑动，viewpager处理事件
         }
-
         setImageMatrix(matrix);
         return false;
     }
